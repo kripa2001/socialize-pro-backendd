@@ -15,6 +15,7 @@ const friendsRoutes = require('./routes/friendsRoutes');
 const messagesRoutes = require('./routes/messagesRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 
+// update
 const app = express();
 
 const whitelist = [
