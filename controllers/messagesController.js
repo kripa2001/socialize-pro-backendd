@@ -89,8 +89,9 @@ exports.getMessages = catchAsync(async (req, res, next) => {
     return user._id.toString() !== userId;
   });
   if (filteredChat.type === 'private') {
-    filteredChat.photo = filteredChat.users[0].photo;
-    filteredChat.chatName = `${filteredChat.users[0].first_name} ${filteredChat.users[0].last_name}`;
+    filteredChat.photo =
+      filteredChat.users[0]?.photo ?? 'https://i.pravatar.cc/300';
+    filteredChat.chatName = `${filteredChat?.users[0]?.first_name} ${filteredChat?.users[0]?.last_name}`;
   } else if (!filteredChat.photo) {
     filteredChat.photo =
       'https://res.cloudinary.com/dcu2kxr5x/image/upload/v1675105115/BACKBOOK/assets/group_fu7eoo.png';

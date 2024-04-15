@@ -84,12 +84,12 @@ exports.signup = catchAsync(async (req, res, next) => {
   });
   await followRccipient.save();
 
-  const verificationEmailToken = newUser.createVerificationEmailToken();
-  await newUser.save({ validateBeforeSave: false });
-  const url = `${process.env.FRONTEND_URL}/activate/${verificationEmailToken}`;
-  await new Email(newUser, url).sendVerificationEmail();
+  // const verificationEmailToken = newUser.createVerificationEmailToken();
+  await newUser.save({ validateBeforeSave: true });
+  // const url = `${process.env.FRONTEND_URL}/activate/${verificationEmailToken}`;
+  // await new Email(newUser, url).sendVerificationEmail();
 
-  const chatId = '63e30af0740d080a71d219b5';
+  const chatId = '6612dfde79819b935b877d21';
 
   await Chat.findByIdAndUpdate(
     chatId,

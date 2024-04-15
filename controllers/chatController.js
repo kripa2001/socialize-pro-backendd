@@ -65,13 +65,22 @@ exports.getChats = catchAsync(async (req, res, next) => {
 
   const chats = await features.query;
 
+  console.log('testing');
+
+  console.log(chats);
+
   const filteredChats = chats.map((obj) => {
     obj.users = obj.users.filter((user) => {
       return user._id.toString() !== userId;
     });
     if (obj.type === 'private') {
-      obj.photo = obj.users[0].photo;
-      obj.chatName = `${obj.users[0].first_name} ${obj.users[0].last_name}`;
+      if (obj.users[0]) {
+        obj.photo = obj?.users[0]?.photo ?? 'https://i.pravatar.cc/300';
+        obj.chatName = `${obj.users[0].first_name} ${obj.users[0].last_name}`;
+      } else {
+        obj.photo = 'https://i.pravatar.cc/300';
+        obj.chatName = 'anonymous';
+      }
     } else if (obj.type === 'group' && !obj.photo) {
       obj.photo =
         'https://res.cloudinary.com/dcu2kxr5x/image/upload/v1675105115/BACKBOOK/assets/group_fu7eoo.png';
@@ -79,7 +88,10 @@ exports.getChats = catchAsync(async (req, res, next) => {
     return obj;
   });
 
+  console.log(filteredChats);
+
   // Send reponse
+
   res.status(200).json({
     status: 'success',
     data: { chats: filteredChats },

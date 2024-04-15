@@ -17,7 +17,15 @@ const chatRoutes = require('./routes/chatRoutes');
 
 const app = express();
 
-const whitelist = ['*'];
+const whitelist = [
+  'http://127.0.0.1:3000',
+  'http://192.168.1.2:3000',
+  'http://192.168.1.6:3000',
+  'http://192.168.1.2:8000',
+  'http://localhost:3000',
+  'https://backbook.vercel.app',
+  'https://backbook-api.cyclic.app',
+];
 const corsOptions = {
   credentials: true,
   origin: function (origin, callback) {
