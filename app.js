@@ -1,7 +1,7 @@
 const path = require('path');
 const express = require('express');
 const cors = require('cors');
-const xss = require('xss-clean');
+// const xss = require('xss-clean');
 const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const morgan = require('morgan');
@@ -80,7 +80,7 @@ app.use('/api/v1/posts/createPost', limiter);
 app.use(express.json({ limit: '5000kb' }));
 app.use(express.urlencoded({ extended: true, limit: '5000kb' }));
 app.use(cookieParser());
-app.use(xss());
+// app.use(xss());
 
 app.set('view engine', 'pug');
 
