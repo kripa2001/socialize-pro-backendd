@@ -5,7 +5,6 @@ const chatController = require('../controllers/chatController');
 
 const router = express.Router();
 
-// PROTECT ALL ROUTES AFTER THIS MIDDLEWARE
 router.use(authController.protect);
 
 router.get('/', chatController.getChats);
