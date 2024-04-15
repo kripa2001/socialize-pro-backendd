@@ -14,7 +14,7 @@ module.exports = class Notification {
     const message = {
       to: this.recipient.fcmToken,
       notification: {
-        title: 'Backbook',
+        title: 'Socialize',
         body: body,
         click_action: click,
         icon: 'https://res.cloudinary.com/dcu2kxr5x/image/upload/v1672997573/BACKBOOK/assets/backbooklogo_on8xru.svg',
