@@ -26,6 +26,8 @@ const whitelist = [
   'http://localhost:3000',
   'https://backbook.vercel.app',
   'https://backbook-api.cyclic.app',
+  'https://socializepro.vercel.app',
+  'socializepro.vercel.app',
   'https://socialize-client-self.vercel.app',
   'https://socialize-client-git-main-kripa2001s-projects.vercel.app',
 ];
