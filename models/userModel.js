@@ -57,16 +57,6 @@ const userSchema = new mongoose.Schema(
       validate: [validator.isStrongPassword, 'Please input a strong password'],
     },
 
-    passwordConfirm: {
-      type: String,
-      required: [true, 'Please confirm your password'],
-      validate: {
-        validator: function (el) {
-          return el === this.password;
-        },
-        message: 'Passwords are not the same',
-      },
-    },
     passwordChangedAt: {
       type: String,
       select: false,
@@ -218,7 +208,7 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 userSchema.pre('save', async function (next) {
@@ -254,7 +244,7 @@ userSchema.methods.createVerificationEmailToken = function () {
 
 userSchema.methods.correctPassword = async function (
   candidatePassword,
-  usePassword
+  usePassword,
 ) {
   return await bcrypt.compare(candidatePassword, usePassword);
 };
@@ -263,7 +253,7 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   if (this.passwordChangedAt) {
     const changedTimestamp = parseInt(
       this.passwordChangedAt.getTime() / 1000,
-      10
+      10,
     );
     return JWTTimestamp < changedTimestamp;
   }

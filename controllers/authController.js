@@ -21,7 +21,7 @@ const createSendToken = ({ user, statusCode, res, recivedRequestsCount }) => {
 
   res.cookie('jwt', token, {
     expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
     ),
     secure: process.env.NODE_ENV === 'production',
     httpOnly: false,
@@ -48,67 +48,74 @@ exports.signup = catchAsync(async (req, res, next) => {
     username,
     email,
     password,
-    passwordConfirm,
     gender,
     birth_Year,
     birth_Month,
     birth_Day,
   } = req.body;
 
-  const newUser = await User.create({
-    first_name,
-    last_name,
-    username,
-    email,
-    password,
-    passwordConfirm,
-    gender,
-    birth_Year,
-    birth_Month,
-    birth_Day,
-  });
+  try {
+    const newUser = await User.create({
+      first_name,
+      last_name,
+      username,
+      email,
+      password,
+      gender,
+      birth_Year,
+      birth_Month,
+      birth_Day,
+    });
+    const senderID = newUser.id;
+    const recipientID = '63b9248399f3f6c7ff609510';
 
-  const senderID = newUser.id;
-  const recipientID = '63b9248399f3f6c7ff609510';
+    const friendRequest = new Friend({
+      sender: senderID,
+      recipient: recipientID,
+      status: 'accepted',
+    });
+    await friendRequest.save();
 
-  const friendRequest = new Friend({
-    sender: senderID,
-    recipient: recipientID,
-    status: 'accepted',
-  });
-  await friendRequest.save();
+    const followRccipient = new Follow({
+      sender: senderID,
+      recipient: recipientID,
+    });
+    await followRccipient.save();
 
-  const followRccipient = new Follow({
-    sender: senderID,
-    recipient: recipientID,
-  });
-  await followRccipient.save();
-
-  // const verificationEmailToken = newUser.createVerificationEmailToken();
-  await newUser.save({ validateBeforeSave: true });
-  // const url = `${process.env.FRONTEND_URL}/activate/${verificationEmailToken}`;
-  // await new Email(newUser, url).sendVerificationEmail();
-
-  const chatId = '6612dfde79819b935b877d21';
-
-  await Chat.findByIdAndUpdate(
-    chatId,
-    {
-      $push: { users: senderID },
-    },
-    {
-      new: true,
+    // const verificationEmailToken = newUser.createVerificationEmailToken();
+    try {
+      await newUser.save({ validateBeforeSave: false });
+    } catch (err) {
+      return next(
+        new AppError('Failed sending mail, Please try again later ', 500),
+      );
     }
-  );
+    // const url = `${process.env.FRONTEND_URL}/activate/${verificationEmailToken}`;
+    // await new Email(newUser, url).sendVerificationEmail();
 
-  await Message.create({
-    type: 'info',
-    sender: senderID,
-    content: `${newUser.first_name} ${newUser.last_name} joined the chat`,
-    chat: chatId,
-  });
+    const chatId = '6612dfde79819b935b877d21';
 
-  createSendToken({ user: newUser, statusCode: 200, res: res });
+    await Chat.findByIdAndUpdate(
+      chatId,
+      {
+        $push: { users: senderID },
+      },
+      {
+        new: true,
+      },
+    );
+
+    await Message.create({
+      type: 'info',
+      sender: senderID,
+      content: `${newUser.first_name} ${newUser.last_name} joined the chat`,
+      chat: chatId,
+    });
+
+    createSendToken({ user: newUser, statusCode: 200, res: res });
+  } catch (err) {
+    return next(new AppError('User already exists!', 400));
+  }
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -120,7 +127,7 @@ exports.login = catchAsync(async (req, res, next) => {
 
   // check if user exist and password is correct
   const user = await User.findOne({ email }).select(
-    'first_name last_name username photo verified password confirmed recivedRequestsCount unseenMessages unseenNotification'
+    'first_name last_name username photo verified password confirmed recivedRequestsCount unseenMessages unseenNotification',
   );
 
   if (!user || !(await user.correctPassword(password, user.password)))
@@ -195,8 +202,8 @@ exports.resendEmailVerification = catchAsync(async (req, res, next) => {
     return next(
       new AppError(
         'Your account is already verified, try logging in again.',
-        400
-      )
+        400,
+      ),
     );
 
   const verificationEmailToken = user.createVerificationEmailToken();
@@ -221,7 +228,7 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   if (!token)
     return next(
-      new AppError('You are not logged in, please log in to access', 401)
+      new AppError('You are not logged in, please log in to access', 401),
     );
 
   // 2) verifcation token
@@ -235,7 +242,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   // 4) if user change password after the token was issued
   if (currentUser.changedPasswordAfter(decoded.iat))
     return next(
-      new AppError('User recently changed password, please login again', 401)
+      new AppError('User recently changed password, please login again', 401),
     );
 
   // GRANT ACCESS
@@ -249,7 +256,7 @@ exports.isLoggedIn = async (req, res, next) => {
       // 1) verify token
       const decoded = await promisify(jwt.verify)(
         req.cookies.jwt,
-        process.env.JWT_SECRET
+        process.env.JWT_SECRET,
       );
 
       // 2) Check if user still exists
@@ -324,8 +331,8 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     return next(
       new AppError(
         'There is an error while sending the email, try again later! ',
-        500
-      )
+        500,
+      ),
     );
   }
 });
@@ -347,7 +354,7 @@ exports.validateResetCode = catchAsync(async (req, res, next) => {
 
   if (!user)
     return next(
-      new AppError('No user found or token expired, please try again', 401)
+      new AppError('No user found or token expired, please try again', 401),
     );
 
   const hashedCode = crypto
@@ -359,8 +366,8 @@ exports.validateResetCode = catchAsync(async (req, res, next) => {
     return next(
       new AppError(
         "The number that you've entered doesn't match your code. Please try again.",
-        401
-      )
+        401,
+      ),
     );
 
   // create token
